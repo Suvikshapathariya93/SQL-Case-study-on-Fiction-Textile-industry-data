@@ -102,6 +102,12 @@ FROM Sales S
 GROUP BY Month
 ORDER BY Month;
 ```
+- **Date Formatting**: 
+  - `DATE_FORMAT(S.SaleDate, '%Y-%m')` extracts the year and month from the sale date in `YYYY-MM` format.
+- **Aggregation**:
+  - `SUM(S.TotalAmount)` computes the total sales revenue for each month.
+- **Grouping**: Results are grouped by `Month`.
+- **Ordering**: Data is sorted in chronological order by month.
 
 **3. Top-Selling Categories**
 - Objective: Which product categories generate the most revenue?
@@ -112,6 +118,12 @@ JOIN Sales S ON P.ProductID = S.ProductID
 GROUP BY P.Category
 ORDER BY TotalSales DESC;
 ```
+- **Joins**: 
+  - `Products` is joined with `Sales` using `ProductID`.
+- **Aggregation**:
+  - `SUM(S.TotalAmount)` calculates the total sales revenue for each category.
+- **Grouping**: Results are grouped by `P.Category`.
+- **Ordering**: Data is sorted in descending order of `TotalSales` (highest-grossing categories first).
 
 **4. Average Stock by Category**
 - Objective: What is the average stock available for each product category?
@@ -132,6 +144,12 @@ JOIN Purchases PU ON SU.SupplierID = PU.SupplierID
 GROUP BY SU.SupplierID, SU.SupplierName
 ORDER BY TotalQuantityPurchased DESC;
 ```
+- **Joins**: 
+  - `Products` is joined with `Inventory` using `ProductID`.
+- **Aggregation**:
+  - `AVG(I.StockQuantity)` computes the average stock quantity for each category.
+- **Grouping**: Results are grouped by `P.Category`.
+- **Ordering**: Data is sorted in descending order of `AvgStock` (categories with the highest average stock first).
 
 **6. Cumulative Sales**
 - Objective: What are the cumulative sales for the company over time?
@@ -140,6 +158,9 @@ SELECT S.SaleDate, SUM(S.TotalAmount) OVER (ORDER BY S.SaleDate) AS CumulativeSa
 FROM Sales S
 ORDER BY S.SaleDate;
 ```
+- **Window Function**:
+  - `SUM(S.TotalAmount) OVER (ORDER BY S.SaleDate)` computes the running total of sales, ordered by sale date.
+- **Ordering**: Results are sorted by `S.SaleDate` to show the cumulative sales in chronological order.
 
 **7. Top 3 Products by Revenue**
 - Objective: Which are the top 3 products by revenue?
@@ -151,6 +172,13 @@ GROUP BY P.ProductName
 ORDER BY TotalRevenue DESC
 LIMIT 3;
 ```
+- **Joins**: 
+  - `Products` is joined with `Sales` using `ProductID`.
+- **Aggregation**:
+  - `SUM(S.TotalAmount)` calculates the total revenue for each product.
+- **Grouping**: Results are grouped by `P.ProductName`.
+- **Ordering**: Data is sorted in descending order of `TotalRevenue` (highest revenue first).
+- **Limiting**: The `LIMIT 3` clause restricts the output to the top 3 products.
 
 **8. Sales vs. Stock Analysis**
 - Objective: What is the sales-to-stock ratio for each product?
