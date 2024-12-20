@@ -134,8 +134,14 @@ JOIN Inventory I ON P.ProductID = I.ProductID
 GROUP BY P.Category
 ORDER BY AvgStock DESC;
 ```
-
+- **Joins**: 
+  - `Products` is joined with `Inventory` using `ProductID`.
+- **Aggregation**:
+  - `AVG(I.StockQuantity)` computes the average stock quantity for each category.
+- **Grouping**: Results are grouped by `P.Category`.
+- **Ordering**: Data is sorted in descending order of `AvgStock` (categories with the highest average stock first).
 **5. High-Performing Suppliers**
+  
 - Objective: Which suppliers have the highest total purchase volume?
 ```sql
 SELECT SU.SupplierID, SU.SupplierName, SUM(PU.Quantity) AS TotalQuantityPurchased, SUM(PU.TotalCost) AS TotalCost
@@ -144,12 +150,6 @@ JOIN Purchases PU ON SU.SupplierID = PU.SupplierID
 GROUP BY SU.SupplierID, SU.SupplierName
 ORDER BY TotalQuantityPurchased DESC;
 ```
-- **Joins**: 
-  - `Products` is joined with `Inventory` using `ProductID`.
-- **Aggregation**:
-  - `AVG(I.StockQuantity)` computes the average stock quantity for each category.
-- **Grouping**: Results are grouped by `P.Category`.
-- **Ordering**: Data is sorted in descending order of `AvgStock` (categories with the highest average stock first).
 
 **6. Cumulative Sales**
 - Objective: What are the cumulative sales for the company over time?
@@ -258,7 +258,7 @@ ORDER BY Profit DESC;
 ```
 
 **6. Yearly Sales Growth**
-Objective: How has the total revenue changed year over year?
+- Objective: How has the total revenue changed year over year?
 ```sql
 WITH YearlySales AS (
     SELECT YEAR(S.SaleDate) AS SaleYear, SUM(S.TotalAmount) AS TotalSales
