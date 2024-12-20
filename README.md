@@ -218,7 +218,7 @@ WHERE S.SaleID IS NULL;
 SELECT Category, AVG(Price) AS AveragePrice
 FROM Products
 GROUP BY Category
-ORDER BY veragePrice DESC;
+ORDER BY AveragePrice DESC;
 ```
 
 **3. Inventory Restocking Alert**
