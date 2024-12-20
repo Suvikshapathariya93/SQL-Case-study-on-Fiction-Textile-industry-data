@@ -140,8 +140,8 @@ ORDER BY AvgStock DESC;
   - `AVG(I.StockQuantity)` computes the average stock quantity for each category.
 - **Grouping**: Results are grouped by `P.Category`.
 - **Ordering**: Data is sorted in descending order of `AvgStock` (categories with the highest average stock first).
+
 **5. High-Performing Suppliers**
-  
 - Objective: Which suppliers have the highest total purchase volume?
 ```sql
 SELECT SU.SupplierID, SU.SupplierName, SUM(PU.Quantity) AS TotalQuantityPurchased, SUM(PU.TotalCost) AS TotalCost
