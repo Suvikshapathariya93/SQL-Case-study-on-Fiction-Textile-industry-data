@@ -113,4 +113,196 @@ GROUP BY P.Category
 ORDER BY TotalSales DESC;
 ```
 
+**4. Average Stock by Category**
+- Objective: What is the average stock available for each product category?
+```sql
+SELECT P.Category, AVG(I.StockQuantity) AS AvgStock
+FROM Products P
+JOIN Inventory I ON P.ProductID = I.ProductID
+GROUP BY P.Category
+ORDER BY AvgStock DESC;
+```
+
+**5. High-Performing Suppliers**
+- Objective: Which suppliers have the highest total purchase volume?
+```sql
+SELECT SU.SupplierID, SU.SupplierName, SUM(PU.Quantity) AS TotalQuantityPurchased, SUM(PU.TotalCost) AS TotalCost
+FROM Suppliers SU
+JOIN Purchases PU ON SU.SupplierID = PU.SupplierID
+GROUP BY SU.SupplierID, SU.SupplierName
+ORDER BY TotalQuantityPurchased DESC;
+```
+
+**6. Cumulative Sales**
+- Objective: What are the cumulative sales for the company over time?
+```sql
+SELECT S.SaleDate, SUM(S.TotalAmount) OVER (ORDER BY S.SaleDate) AS CumulativeSales
+FROM Sales S
+ORDER BY S.SaleDate;
+```
+
+**7. Top 3 Products by Revenue**
+- Objective: Which are the top 3 products by revenue?
+```sql
+SELECT P.ProductName, SUM(S.TotalAmount) AS TotalRevenue
+FROM Products P
+JOIN Sales S ON P.ProductID = S.ProductID
+GROUP BY P.ProductName
+ORDER BY TotalRevenue DESC
+LIMIT 3;
+```
+
+**8. Sales vs. Stock Analysis**
+- Objective: What is the sales-to-stock ratio for each product?
+```sql
+SELECT P.ProductName, SUM(S.Quantity) AS TotalSold, AVG(I.StockQuantity) AS AvgStock, SUM(S.Quantity) * 1.0 / AVG(I.StockQuantity) AS SalesToStockRatio
+FROM Products P
+JOIN Sales S ON P.ProductID = S.ProductID
+JOIN Inventory I ON P.ProductID = I.ProductID
+GROUP BY P.ProductName
+ORDER BY SalesToStockRatio DESC;
+```
+
+**9. Supplier Rankings**
+- Objective: Rank suppliers by the total value of purchases.
+```sql
+SELECT SupplierID, SupplierName, SUM(TotalCost) AS TotalCost,
+    RANK() OVER (ORDER BY SUM(TotalCost) DESC) AS SupplierRank
+FROM Suppliers SU
+JOIN Purchases PU ON SU.SupplierID = PU.SupplierID
+GROUP BY SupplierID, SupplierName;
+```
+
+## Additional Queries and Answers
+
+**1. Products with No Sales**
+- Objective: Which products have not been sold yet?
+```sql
+SELECT P.ProductID, P.ProductName
+FROM Products P
+LEFT JOIN Sales S ON P.ProductID = S.ProductID
+WHERE S.SaleID IS NULL;
+```
+
+**2. Average Price by Product Category**
+- Objective: What is the average price for each product category?
+```sql
+SELECT Category, AVG(Price) AS AveragePrice
+FROM Products
+GROUP BY Category
+ORDER BY veragePrice DESC;
+```
+
+**3. Inventory Restocking Alert**
+- Objective: Which products have stock below a threshold of 100 units?
+```sql
+SELECT P.ProductID, P.ProductName, I.StockQuantity
+FROM Products P
+JOIN Inventory I ON P.ProductID = I.ProductID
+WHERE I.StockQuantity < 100;
+```
+
+**4. Supplier Contribution to Each Product**
+- Objective: What is the total quantity purchased from each supplier for each product?
+```sql
+SELECT PU.ProductID, P.ProductName, PU.SupplierID, SU.SupplierName, SUM(PU.Quantity) AS TotalQuantitySupplied
+FROM Purchases PU
+JOIN Products P ON PU.ProductID = P.ProductID
+JOIN Suppliers SU ON PU.SupplierID = SU.SupplierID
+GROUP BY PU.ProductID, P.ProductName, PU.SupplierID, SU.SupplierName
+ORDER BY P.ProductName, TotalQuantitySupplied DESC;
+```
+
+**5. Most Profitable Products**
+- Objective: Which products generate the highest profit based on sales and cost data?
+```sql
+WITH ProductCost AS (
+    SELECT P.ProductID, P.ProductName, AVG(PU.TotalCost / PU.Quantity) AS AverageCost
+    FROM Products P
+    JOIN Purchases PU ON P.ProductID = PU.ProductID
+    GROUP BY P.ProductID, P.ProductName)
+SELECT P.ProductName, SUM(S.TotalAmount) AS TotalRevenue, SUM(S.Quantity * PC.AverageCost) AS TotalCost, SUM(S.TotalAmount) - SUM(S.Quantity * PC.AverageCost) AS Profit
+FROM Sales S
+JOIN Products P ON S.ProductID = P.ProductID
+JOIN ProductCost PC ON P.ProductID = PC.ProductID
+GROUP BY P.ProductName
+ORDER BY Profit DESC;
+```
+
+**6. Yearly Sales Growth**
+Objective: How has the total revenue changed year over year?
+```sql
+WITH YearlySales AS (
+    SELECT YEAR(S.SaleDate) AS SaleYear, SUM(S.TotalAmount) AS TotalSales
+    FROM Sales S
+    GROUP BY YEAR(S.SaleDate))
+SELECT SaleYear, TotalSales, LAG(TotalSales) OVER (ORDER BY SaleYear) AS PreviousYearSales,
+    (TotalSales - LAG(TotalSales) OVER (ORDER BY SaleYear)) AS SalesGrowth,
+    ROUND(((TotalSales - LAG(TotalSales) OVER (ORDER BY SaleYear)) * 100.0 / LAG(TotalSales) OVER (ORDER BY SaleYear)), 2) AS GrowthPercentage
+FROM YearlySales;
+```
+
+**7. Products with Highest Stock Turnover**
+- Objective: Which products have the highest stock turnover ratio?
+```sql
+SELECT P.ProductID, P.ProductName, SUM(S.Quantity) AS TotalSold, AVG(I.StockQuantity) AS AvgStock,
+    SUM(S.Quantity) * 1.0 / AVG(I.StockQuantity) AS StockTurnoverRatio
+FROM Products P
+JOIN Sales S ON P.ProductID = S.ProductID
+JOIN Inventory I ON P.ProductID = I.ProductID
+GROUP BY P.ProductID, P.ProductName
+ORDER BY StockTurnoverRatio DESC;
+```
+
+**8. Quarterly Supplier Ranking**
+- Objective: Rank suppliers by the total value of purchases on a quarterly basis.
+```sql
+SELECT QUARTER(PU.PurchaseDate) AS Quarter, SU.SupplierID, SU.SupplierName, SUM(PU.TotalCost) AS TotalCost,
+    RANK() OVER (PARTITION BY QUARTER(PU.PurchaseDate) ORDER BY SUM(PU.TotalCost) DESC) AS SupplierRank
+FROM Purchases PU
+JOIN Suppliers SU ON PU.SupplierID = SU.SupplierID
+GROUP BY Quarter, SU.SupplierID, SU.SupplierName;
+```
+
+## Feature Highlights
+1. Basic SQL: Aggregations, filtering, and joins.
+2. Window Functions: RANK, AVG, cumulative totals, lead & lag function and percentage calculations.
+3. CTEs: Breaking down complex queries for readability and reuse.
+
+## Key Insights
+**1. Sales Performance**
+  - Top Products: Cotton Fabric and Denim Jacket are the top-selling products by both revenue and quantity.
+  - Category Revenue: Fabrics outperform other categories in revenue generation.
+  - Seasonal Trends: Sales tend to peak in specific months, revealing opportunities for targeted marketing.
+    
+**2. Inventory Management**
+  - Restocking Needs: Certain products, like Denim Jacket and Wool Fabric, require immediate restocking due to low stock levels.
+  - Stock Turnover: High-demand products exhibit faster stock turnover, indicating efficient sales performance.
+  - Average Stock Levels: Fabrics maintain higher average stock levels compared to Clothing.
+    
+**3. Supplier Analysis**
+  - Top Suppliers: Textile Mills contributes the most to product supply, followed by Fabric Supplies.
+  - Supplier Ratings: High-rated suppliers tend to deliver more consistent and cost-effective purchases.
+  - Supplier Performance: Ranking suppliers by quarterly purchases helps identify consistent performers.
+    
+**4. Profitability**
+  - Product Margins: Cotton Fabric has the highest profitability due to its low cost and high sales revenue.
+  - Cost Management: Effective supplier selection and purchase planning reduce overall costs.
+    
+**5. Business Growth**
+  - Yearly Growth: The company exhibits steady sales growth year-over-year, with a 20% increase in revenue in the last year.
+  - Cumulative Sales: A clear upward trend in cumulative sales reflects strong operational performance.
+    
+**6. Operational Efficiency**
+  - Sales-to-Stock Ratio: Products like Cotton Fabric demonstrate an optimal balance between inventory and sales.
+  - Inventory Turnover: Efficient inventory turnover rates suggest strong product demand and sales alignment.
+
+## Use cases
+- Sales Performance Tracking: Identify top-performing products, analyze seasonal trends, and monitor revenue growth.
+- Inventory Optimization: Detect low-stock items, calculate stock turnover rates, and ensure efficient inventory management.
+- Supplier Evaluation: Rank suppliers based on cost, quantity supplied, and performance over time.
+- Profitability Analysis: Determine product margins by comparing sales revenue and purchase costs.
+- Operational Insights: Evaluate sales-to-stock ratios, identify restocking needs, and improve stock efficiency.
+- Yearly Growth Monitoring: Assess revenue growth trends and plan for future sales targets.
+- Cost Management: Optimize purchase decisions by analyzing supplier contributions and purchase trends.
 
